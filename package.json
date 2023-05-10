@@ -1,0 +1,22 @@
+{
+  "name": "snaarfbot",
+  "private": "true",
+  "version": "0.0.1",
+  "description": "A Twitch chat bot whose purpose hasn't been determined just yet.",
+  "main": "src/snaarfBot.js",
+  "author": "BBBThunda",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.5.0"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "crypto": "^1.0.1",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "tmi.js": "^1.8.5",
+    "websocket": "^1.0.34"
+  }
+}
