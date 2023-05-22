@@ -2,18 +2,30 @@
 /**
  * snaarfBot.js - Main entrypoint for SnaarfBot
  */
-var Poll = require('./poll');
+const Poll = require('./poll');
+
 
 //TODO: Implement ability to handle multiple channels simultaneously
-//TODO: Make the globals persistent later
+//TODO: Make the globals persistent later (add DB?)
 //TODO: Write unit tests
+//TODO: Support multiple channels
+//TODO: Add scopes to OAuth request
+//TODO: Figure out if OAuth token can be obtained programmatically
+//TODO: Implement CI for linting/tests
+//TODO: Consider creating containers/images for test/dev/prod environments
+//TODO: Add command for creating a poll
+//TODO: Add command for configuring a poll
+//TODO: Add command for adding poll options
+//TODO: Add command for viewing a poll (with or without current results)
+//TODO: Add command for selecting an option
+//TODO: Add command for viewing your selected option and number of votes applied
 
 class SnaarfBot {
 
-  /** @property {object} connectionOpts Info required to connect. See tmi.js docs for format, etc. */
+  /** @property {Object} connectionOpts Info required to connect. See tmi.js docs for format, etc. */
   connectionOpts;
 
-  /** @property {object} client IRC Client created and initialized by tmi.js */
+  /** @property {Object} client IRC Client created and initialized by tmi.js */
   client;
 
   /** @property {string} path path of the repo's "src" directory on the current system (pulled from env vars) */
@@ -22,12 +34,17 @@ class SnaarfBot {
   /** @property {Array} Constants to be used globally for the application */
   constants;
 
-  /** @property {Poll[string][int]} polls All Poll objects indexed by channel, pollId */
+  /** @property {Object} logger Logger client for handling/formatting logs to console */
+  logger;
+
+  /** @property {Poll[string][number]} polls All Poll objects indexed by channel, pollId */
   polls = [];
 
   constructor () {
-    // Initialize environment variables and "global" constants
+    this.logger = require('./logger');
     const dotenv = require('dotenv');
+
+    // Initialize environment variables and "global" constants
     dotenv.config();
     if (!process.env) {
       throw new Error('Unable to initialize environment variables. Did you create a .env file in your repo root?');
@@ -50,24 +67,27 @@ class SnaarfBot {
       ]
     };
     // Create a client with our options
-    var client = new tmi.client(this.connectionOpts);
-
-    // Register our event handlers (defined below)
-    client.on('message', this.onMessageHandler);
+    const client = new tmi.client(this.connectionOpts);
+    // Register our event handlers
     client.on('connected', this.onConnectedHandler);
+    client.on('message', this.onMessageHandler);
     client.on('cheer', this.onCheerHandler);
-
-    // Connect to Twitch:
+    // TODO: Add support for channel subs
+    // TODO: Add support for channel donations
+    // TODO: Add support for channel point redemptions
+    // Connect to Twitch and cache the client
     client.connect();
-
     this.client = client;
   }
+
+  // Called every time the bot connects to Twitch chat
+  onConnectedHandler = (addr, port) => {this.logger.info(`* Connected to ${addr}:${port}`);}
 
   /**
    * Called every time a message comes in
    *
    * @param {string} target  Target channel where message was sent
-   * @param {array}  context Metadata about the message (sender, type, etc.)
+   * @param {Object}  context Metadata about the message (sender, type, etc.)
    * @param {string} msg     The actual message text
    * @param {bool}   isMe    Whether the message was sent by this bot
    */
@@ -90,40 +110,41 @@ class SnaarfBot {
     // If the command is known, let's execute it
     switch (commandName) {
       case 'dice':
-        // console.log(context);
+        this.logger.debug(context);
         this.getDiceRoll(target, context, args);
-        console.log(`* Executed ${commandName} command`);
+        this.logger.info(`* Executed ${commandName} command in ${target}`);
         break;
       default:
-        console.log(`* Unknown command ${commandName}`);
+        this.logger.warn(`* Unknown command ${commandName}, ignored`);
     }
   }
 
   /**
+   * Handle a dice command. Get input data, roll die, send bot message with result.
    * 
-   * @param {*} target 
-   * @param {*} context 
-   * @param {*} args 
+   * @param {string}   target  Name of the channel where a message was sent
+   * @param {Object}   context Additional metadata about the message
+   * @param {string[]} args    Arguments typed after a command
    */
   getDiceRoll = (target, context, args) => {
     const sides = args[0] ?? null;
     const result = this.rollDie(sides);
     // @Username or You
     const prefixUsername = context['display-name'] ? '@' + context['display-name'] : 'You';
-    this.client.say(target, prefixUsername + ' rolled a ' + result);
+    // Send message via bot user with result of command
+    const message = prefixUsername + ' rolled a ' + result;
+    this.logger.info(message);
+    this.client.say(target, message);
   }
 
   /** 
    * Roll a die with a given number of sides and return the result
    * 
-   * @param int sides Number of sides of the die (default 6)
+   * @param {number} sides Number of sides of the die (default 6)
    * 
-   * @returns int Result of die roll.
+   * @returns {number} Result of die roll.
   */ 
   rollDie = (sides) => (Math.floor(Math.random() * (sides ?? this.constants.DEFAULT_DIE_SIDES)) + 1)
-
-  // Called every time the bot connects to Twitch chat
-  onConnectedHandler = (addr, port) => {console.log(`* Connected to ${addr}:${port}`);}
 
   //TODO: Figure out what parameters are passed to cheer event handlers
   //TODO: Figure out how to test with real(ish?) data
