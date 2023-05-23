@@ -34,7 +34,7 @@ class SnaarfBot {
   // /** @property {Poll[string][number]} polls All Poll objects indexed by channel, pollId */
   // polls = []
 
-  constructor () {
+  constructor() {
     this.logger = require('./logger')
     const dotenv = require('dotenv')
     const client = require('./tmi')
@@ -42,11 +42,15 @@ class SnaarfBot {
     // Initialize environment variables and "global" constants
     dotenv.config()
     if (!process.env) {
-      throw new Error('Unable to initialize environment variables. Did you create a .env file in your repo root?')
+      throw new Error(
+        'Unable to initialize environment variables. Did you create a .env file in your repo root?'
+      )
     }
     this.constants = require(process.env.SRC_PATH + '/constants')
     if (!this.constants) {
-      throw new Error('Unable to initialize constants. Make sure "src/constants.js" exists, is readable and exports something.')
+      throw new Error(
+        'Unable to initialize constants. Make sure "src/constants.js" exists, is readable and exports something.'
+      )
     }
 
     // Create a connection to IRC with tmi.js
@@ -63,7 +67,9 @@ class SnaarfBot {
   }
 
   // Called every time the bot connects to Twitch chat
-  onConnectedHandler = (addr, port) => { this.logger.info(`* Connected to ${addr}:${port}`) }
+  onConnectedHandler = (addr, port) => {
+    this.logger.info(`* Connected to ${addr}:${port}`)
+  }
 
   /**
    * Called every time a message comes in
@@ -75,7 +81,9 @@ class SnaarfBot {
    */
   onMessageHandler = (target, context, msg, isMe) => {
     // Ignore messages from the bot
-    if (isMe) { return }
+    if (isMe) {
+      return
+    }
 
     // Useful context fields for reference (not used yet)
     // const chatUserId = context['user-id']
@@ -83,7 +91,9 @@ class SnaarfBot {
 
     const msgParts = msg.trim().split(' ')
     // Ignore messages that are not bot commands
-    if (!msgParts[0] || msgParts[0].charAt(0) !== '!') { return }
+    if (!msgParts[0] || msgParts[0].charAt(0) !== '!') {
+      return
+    }
 
     // If it's a command, parse it
     const args = msgParts.slice(1)
@@ -112,7 +122,9 @@ class SnaarfBot {
     const sides = args[0] ?? null
     const result = this.rollDie(sides)
     // @Username or You
-    const prefixUsername = context['display-name'] ? '@' + context['display-name'] : 'You'
+    const prefixUsername = context['display-name']
+      ? '@' + context['display-name']
+      : 'You'
     // Send message via bot user with result of command
     const message = prefixUsername + ' rolled a ' + result
     this.logger.info(message)
@@ -125,15 +137,14 @@ class SnaarfBot {
    * @param {number} sides Number of sides of the die (default 6)
    *
    * @returns {number} Result of die roll.
-  */
-  rollDie = (sides) => (Math.floor(Math.random() * (sides ?? this.constants.DEFAULT_DIE_SIDES)) + 1)
+   */
+  rollDie = (sides) =>
+    Math.floor(Math.random() * (sides ?? this.constants.DEFAULT_DIE_SIDES)) + 1
 
   // TODO: Figure out what parameters are passed to cheer event handlers
   // TODO: Figure out how to test with real(ish?) data
-  onCheerHandler = (target, context, message) => {
-
-  }
-};
+  onCheerHandler = (target, context, message) => {}
+}
 
 /* eslint no-unused-vars: "off" -- Functionality is handled by event handlers, so we only need to create an instance */
 const snaarfBot = new SnaarfBot()

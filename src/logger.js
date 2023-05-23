@@ -6,11 +6,6 @@ const myFormat = printf(({ level, message, label, timestamp }) => {
 })
 
 module.exports = createLogger({
-  format: combine(
-    timestamp(),
-    label({ label: 'SnaarfBot' }),
-    json(),
-    myFormat
-  ),
-  transports: [new transports.Console()]
+  format: combine(timestamp(), label({ label: 'SnaarfBot' }), json(), myFormat),
+  transports: [new transports.Console()],
 })
