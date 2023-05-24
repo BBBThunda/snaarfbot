@@ -1,0 +1,61 @@
+#!/bin/bash
+
+set -Eeuo pipefail
+
+ESLINT_PATH='node_modules/.bin/eslint'
+PRETTIER_PATH='node_modules/.bin/prettier'
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g')
+GREEN="\033[0;32m"
+RED="\033[0;41m"
+NOFORMAT="\033[0m"
+
+if [[ "$STAGED_FILES" = "" ]]; then
+  exit 0
+fi
+
+PASS=true
+
+echo -e "\n${GREEN}Validating Javascript:${NOFORMAT}\n"
+
+echo -e "${GREEN}Checking for eslint executable${NOFORMAT}"
+ls $ESLINT_PATH &> /dev/null
+if [[ "$?" == 1 ]]; then
+  echo -e "\t${RED}eslint not found. Please run 'npm install'${NOFORMAT}"
+  exit 1
+fi
+echo -e "${GREEN}eslint executable FOUND!${NOFORMAT}"
+
+echo -e "${GREEN}Checking for prettier executable${NOFORMAT}"
+ls $PRETTIER_PATH &> /dev/null
+if [[ "$?" == 1 ]]; then
+  echo -e "\t${RED}prettier not found. Please run 'npm install'${NOFORMAT}"
+  exit 1
+fi
+echo -e "${GREEN}prettier executable FOUND!${NOFORMAT}"
+
+echo -e "${GREEN}Running eslint on modified files${NOFORMAT}"
+echo -e "$STAGED_FILES" | xargs npm run lint
+if ! $PASS; then
+  echo -e "${RED}COMMIT FAILED:${NOFORMAT} Your commit contains files that should pass ESLint but do not. Please fix the ESLint errors and try again.\n"
+  exit 1
+fi
+echo -e "${GREEN}ESLint check complete${NOFORMAT}"
+
+echo -e "${GREEN}Running prettier on modified files${NOFORMAT}"
+echo -e "$STAGED_FILES" | xargs npm run format:check
+
+if [[ "$?" == 0 ]]; then
+  echo -e "${GREEN}prettier completed successfully${NOFORMAT}"
+else
+  echo -e "${RED}prettier Failed${NOFORMAT}"
+  echo -e "${RED}COMMIT FAILED:${NOFORMAT} Your commit contains files do not conform to coding standards. Try running 'npm run format:write'. Please fix prettier errors and try again.\n"
+  exit 1
+fi
+
+echo -e "${GREEN}Javascript validation completed!${NOFORMAT}"
+
+if [[ "$?" == 0 ]]; then
+  echo -e "${GREEN}COMMIT SUCCEEDED${NOFORMAT}\n"
+else
+  exit $?
+fi
