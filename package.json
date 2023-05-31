@@ -19,8 +19,8 @@
   "scripts": {
     "format:check": "prettier --check .",
     "format:write": "prettier --write .",
-    "format": "eslint --fix",
-    "lint": "eslint",
+    "lint:check": "eslint",
+    "lint:fix": "eslint --fix",
     "test": "jest"
   },
   "dependencies": {

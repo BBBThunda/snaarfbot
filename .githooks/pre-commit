@@ -4,7 +4,7 @@ set -Euo pipefail
 
 ESLINT_PATH='node_modules/.bin/eslint'
 PRETTIER_PATH='node_modules/.bin/prettier'
-STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g')
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g' |grep ".js$")
 GREEN="\033[0;32m"
 RED="\033[0;41m"
 NOFORMAT="\033[0m"
@@ -34,7 +34,7 @@ fi
 echo -e "${GREEN}prettier executable FOUND!${NOFORMAT}"
 
 echo -e "${GREEN}Running eslint on modified files${NOFORMAT}"
-echo -e "$STAGED_FILES" | xargs npm run lint
+echo -e "$STAGED_FILES" | xargs npm run lint:check
 
 if [[ "$?" != 0 ]]; then
   echo -e "${RED}COMMIT FAILED:${NOFORMAT} Your commit contains files that should pass ESLint but do not. Please fix the ESLint errors and try again.\n"

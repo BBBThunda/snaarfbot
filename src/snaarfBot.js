@@ -1,20 +1,5 @@
 #!/usr/bin/env node
 
-// TODO: Implement ability to handle multiple channels simultaneously
-// TODO: Make the globals persistent later (add DB?)
-// TODO: Write unit tests
-// TODO: Support multiple channels
-// TODO: Add scopes to OAuth request
-// TODO: Figure out if OAuth token can be obtained programmatically
-// TODO: Implement CI for linting/tests
-// TODO: Consider creating containers/images for test/dev/prod environments
-// TODO: Add command for creating a poll
-// TODO: Add command for configuring a poll
-// TODO: Add command for adding poll options
-// TODO: Add command for viewing a poll (with or without current results)
-// TODO: Add command for selecting an option
-// TODO: Add command for viewing your selected option and number of votes applied
-
 class SnaarfBot {
   /** @property {Object} connectionOpts Info required to connect. See tmi.js docs for format, etc. */
   connectionOpts
@@ -30,9 +15,6 @@ class SnaarfBot {
 
   /** @property {Object} logger Logger client for handling/formatting logs to console */
   logger
-
-  // /** @property {Poll[string][number]} polls All Poll objects indexed by channel, pollId */
-  // polls = []
 
   constructor() {
     this.logger = require('./logger')
@@ -58,9 +40,6 @@ class SnaarfBot {
     client.on('connected', this.onConnectedHandler)
     client.on('message', this.onMessageHandler)
     client.on('cheer', this.onCheerHandler)
-    // TODO: Add support for channel subs
-    // TODO: Add support for channel donations
-    // TODO: Add support for channel point redemptions
     // Connect to Twitch and cache the client
     client.connect()
     this.client = client
@@ -126,7 +105,7 @@ class SnaarfBot {
       ? '@' + context['display-name']
       : 'You'
     // Send message via bot user with result of command
-    const message = prefixUsername + ' rolled a ' + result
+    const message = prefixUsername + ' rolled a ' + result + ', Schneeyarrrf!'
     this.logger.info(message)
     this.client.say(target, message)
   }
@@ -141,8 +120,6 @@ class SnaarfBot {
   rollDie = (sides) =>
     Math.floor(Math.random() * (sides ?? this.constants.DEFAULT_DIE_SIDES)) + 1
 
-  // TODO: Figure out what parameters are passed to cheer event handlers
-  // TODO: Figure out how to test with real(ish?) data
   onCheerHandler = (target, context, message) => {}
 }
 
