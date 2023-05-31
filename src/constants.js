@@ -1,1 +1,1 @@
-exports.DEFAULT_DIE_SIDES = 6;
+exports.DEFAULT_DIE_SIDES = 6
