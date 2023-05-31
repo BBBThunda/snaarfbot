@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support multiple channels
 
 ## [Unversioned]
+
 - Convert all line endings from CRLF to LF
 - Add pre-commit and pre-receive githooks
 - Install and configure eslint and prettier and make existing code compliant
