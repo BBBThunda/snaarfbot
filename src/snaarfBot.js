@@ -4,49 +4,19 @@ class SnaarfBot {
   /** @property {Object} connectionOpts Info required to connect. See tmi.js docs for format, etc. */
   connectionOpts
 
-  /** @property {Object} client IRC Client created and initialized by tmi.js */
+  /** @property {Object} client Twitch IRC Client created and initialized by tmi.js */
   client
 
-  /** @property {string} path path of the repo's "src" directory on the current system (pulled from env vars) */
-  path
-
-  /** @property {Array} Constants to be used globally for the application */
+  /** @property {Array} constants to be used globally for the application */
   constants
 
   /** @property {Object} logger Logger client for handling/formatting logs to console */
   logger
 
-  constructor() {
-    this.logger = require('./logger')
-    const dotenv = require('dotenv')
+  constructor(logger, constants, client) {
+    this.logger = logger
+    this.constants = constants
 
-    // Initialize environment variables and "global" constants
-    dotenv.config()
-    if (!process.env) {
-      throw new Error(
-        'Unable to initialize environment variables. Did you create a .env file in your repo root?'
-      )
-    }
-    this.constants = require(process.env.SRC_PATH + '/constants')
-    if (!this.constants) {
-      throw new Error(
-        'Unable to initialize constants. Make sure "src/constants.js" exists, is readable and exports something.'
-      )
-    }
-
-    // Create a connection to IRC with tmi.js
-    const tmi = require('tmi.js')
-    // Define configuration options
-    this.connectionOpts = {
-      identity: {
-        username: process.env.BOT_ACCOUNT,
-        password: 'oauth:' + process.env.OAUTH_TOKEN,
-      },
-      channels: [process.env.CHANNEL],
-    }
-    // Create a client with our options
-    /* eslint new-cap: "off" -- Constructor is from an external library and doesn't follow standard eslint guidelines */
-    const client = new tmi.client(this.connectionOpts)
     // Register our event handlers
     client.on('connected', this.onConnectedHandler)
     client.on('message', this.onMessageHandler)
@@ -134,5 +104,4 @@ class SnaarfBot {
   onCheerHandler = (target, context, message) => {}
 }
 
-/* eslint no-unused-vars: "off" -- Functionality is handled by event handlers, so we only need to create an instance */
-const snaarfBot = new SnaarfBot()
+module.exports = SnaarfBot
