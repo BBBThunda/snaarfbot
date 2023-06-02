@@ -13,7 +13,11 @@ jest.mock('../tmi')
 
 const CONSTANTS = { DEFAULT_DIE_SIDES: 6 }
 
+/**
+ * Teardown method
+ */
 afterEach(() => {
+  // Clear all mocks so they don't accumulate across tests
   jest.clearAllMocks()
 })
 
@@ -48,11 +52,20 @@ describe('message handler', () => {
   const TEST_CONTEXT = {}
   const TEST_MESSAGE = 'Generic non-command message'
   const TEST_IS_ME = false
+
+  const TEST_MESSAGE_DICE_COMMAND = '!dice'
+  const TEST_MESSAGE_INVALID_COMMAND = '!someInvalidCommand'
+
   const bot = new SnaarfBot(logger, CONSTANTS, client)
 
-  test('should ignore own messages', () => {
+  test('should ignore own messages, even if a recognized command', () => {
     const isMe = true
-    bot.onMessageHandler(TEST_TARGET, TEST_CONTEXT, TEST_MESSAGE, isMe)
+    bot.onMessageHandler(
+      TEST_TARGET,
+      TEST_CONTEXT,
+      TEST_MESSAGE_DICE_COMMAND,
+      isMe
+    )
     expect(logger.info).toHaveBeenCalledTimes(0)
     expect(logger.warn).toHaveBeenCalledTimes(0)
     expect(logger.error).toHaveBeenCalledTimes(0)
@@ -61,8 +74,7 @@ describe('message handler', () => {
   })
 
   test('should ignore non-commands', () => {
-    const message = 'HYPEEEE!!!'
-    bot.onMessageHandler(TEST_TARGET, TEST_CONTEXT, message, TEST_IS_ME)
+    bot.onMessageHandler(TEST_TARGET, TEST_CONTEXT, TEST_MESSAGE, TEST_IS_ME)
     expect(logger.info).toHaveBeenCalledTimes(0)
     expect(logger.warn).toHaveBeenCalledTimes(0)
     expect(logger.error).toHaveBeenCalledTimes(0)
@@ -71,8 +83,12 @@ describe('message handler', () => {
   })
 
   test('dice command should result in bot message', () => {
-    const message = '!dice'
-    bot.onMessageHandler(TEST_TARGET, TEST_CONTEXT, message, TEST_IS_ME)
+    bot.onMessageHandler(
+      TEST_TARGET,
+      TEST_CONTEXT,
+      TEST_MESSAGE_DICE_COMMAND,
+      TEST_IS_ME
+    )
     expect(logger.info).toHaveBeenCalledWith(
       `* Executed dice command in ${TEST_TARGET}`
     )
@@ -80,8 +96,12 @@ describe('message handler', () => {
   })
 
   test('invalid command should result in warning log', () => {
-    const message = '!someInvalidCommand'
-    bot.onMessageHandler(TEST_TARGET, TEST_CONTEXT, message, TEST_IS_ME)
+    bot.onMessageHandler(
+      TEST_TARGET,
+      TEST_CONTEXT,
+      TEST_MESSAGE_INVALID_COMMAND,
+      TEST_IS_ME
+    )
     expect(logger.warn).toHaveBeenCalled()
   })
 })
@@ -117,18 +137,21 @@ describe('getDiceRoll method', () => {
 })
 
 describe('rollDie method', () => {
+  const TEST_REGEX_SIX_SIDED = /[123456]/
   const bot = new SnaarfBot(logger, CONSTANTS, client)
 
   test('with null results in 1-6', () => {
-    expect(bot.rollDie(null).toString()).toMatch(/[123456]/)
+    expect(bot.rollDie(null).toString()).toMatch(TEST_REGEX_SIX_SIDED)
   })
 
   test('with 1 results in 1', () => {
     expect(bot.rollDie(1)).toBe(1)
   })
 
-  test('with null results in 1-6', () => {
+  test('with null and no default constant results in 1-6', () => {
     const botWithoutDefault = new SnaarfBot(logger, CONSTANTS, client)
-    expect(botWithoutDefault.rollDie(null).toString()).toMatch(/[123456]/)
+    expect(botWithoutDefault.rollDie(null).toString()).toMatch(
+      TEST_REGEX_SIX_SIDED
+    )
   })
 })

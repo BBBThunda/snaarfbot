@@ -6,14 +6,14 @@ class SnaarfBot {
   /** @property {Array} constants Global constants for the application */
   constants
 
-  /** @property {Object} logger Logger client for handling/formatting logs to console */
+  /** @property {Object} logger Logger client for handling/formatting system logs */
   logger
 
   /**
    * Create a bot object
-   * @param {Object} logger Fully configured logger client with methods like warn(), debug(), etc.
+   * @param {Object} logger    Fully configured logger client with methods like warn(), debug(), etc.
    * @param {Object} constants Hashmap with constant names and values
-   * @param {Object} client Twitch IRC client, such as tmi.js
+   * @param {Object} client    Twitch IRC client, such as tmi.js
    */
   constructor(logger, constants, client) {
     this.logger = logger
@@ -41,7 +41,7 @@ class SnaarfBot {
    * Called every time a message is sent in the channel ('message' event triggered by client)
    *
    * @param {string} target  Target channel where message was sent
-   * @param {Object}  context Metadata about the message (sender, type, etc.)
+   * @param {Object} context Metadata about the message (sender, type, etc.)
    * @param {string} msg     The actual message text
    * @param {bool}   isMe    Whether the message was sent by this bot
    */

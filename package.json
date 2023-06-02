@@ -3,7 +3,7 @@
   "private": "true",
   "version": "0.0.1",
   "description": "A Twitch chat bot whose purpose hasn't been determined just yet.",
-  "main": "src/snaarfBot.js",
+  "main": "src/index.js",
   "author": "BBBThunda",
   "license": "MIT",
   "devDependencies": {
