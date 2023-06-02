@@ -1,18 +1,20 @@
-#!/usr/bin/env node
-
+/** Contains the primary logic of the chat bot */
 class SnaarfBot {
-  /** @property {Object} connectionOpts Info required to connect. See tmi.js docs for format, etc. */
-  connectionOpts
-
   /** @property {Object} client Twitch IRC Client created and initialized by tmi.js */
   client
 
-  /** @property {Array} constants to be used globally for the application */
+  /** @property {Array} constants Global constants for the application */
   constants
 
   /** @property {Object} logger Logger client for handling/formatting logs to console */
   logger
 
+  /**
+   * Create a bot object
+   * @param {Object} logger Fully configured logger client with methods like warn(), debug(), etc.
+   * @param {Object} constants Hashmap with constant names and values
+   * @param {Object} client Twitch IRC client, such as tmi.js
+   */
   constructor(logger, constants, client) {
     this.logger = logger
     this.constants = constants
@@ -20,19 +22,23 @@ class SnaarfBot {
     // Register our event handlers
     client.on('connected', this.onConnectedHandler)
     client.on('message', this.onMessageHandler)
-    client.on('cheer', this.onCheerHandler)
+    // client.on('cheer', this.onCheerHandler)
     // Connect to Twitch and cache the client
     client.connect()
     this.client = client
   }
 
-  // Called every time the bot connects to Twitch chat
+  /**
+   * Called every time the bot connects to Twitch chat ('connected' event triggered by client)
+   * @param {string} addr The URI we connected to
+   * @param {number} port The port we connected to
+   */
   onConnectedHandler = (addr, port) => {
     this.logger.info(`* Connected to ${addr}:${port}`)
   }
 
   /**
-   * Called every time a message comes in
+   * Called every time a message is sent in the channel ('message' event triggered by client)
    *
    * @param {string} target  Target channel where message was sent
    * @param {Object}  context Metadata about the message (sender, type, etc.)
@@ -79,14 +85,14 @@ class SnaarfBot {
    * @param {string[]} args    Arguments typed after a command
    */
   getDiceRoll = (target, context, args) => {
-    const sides = args[0] ?? null
-    const result = this.rollDie(sides)
+    const sides = isNaN(args[0]) ? null : args[0] ?? null
     // @Username or You
     const prefixUsername = context['display-name']
       ? '@' + context['display-name']
       : 'You'
+    const result = this.rollDie(sides)
     // Send message via bot user with result of command
-    const message = prefixUsername + ' rolled a ' + result + ', Schneeyarrrf!'
+    const message = `${prefixUsername} rolled a ${result}, Schneeyarrrf!`
     this.logger.info(message)
     this.client.say(target, message)
   }
@@ -94,14 +100,16 @@ class SnaarfBot {
   /**
    * Roll a die with a given number of sides and return the result
    *
-   * @param {number} sides Number of sides of the die (default 6)
+   * @param {number} sides Number of sides of the die (default defined by constant or 6)
    *
    * @returns {number} Result of die roll.
    */
   rollDie = (sides) =>
-    Math.floor(Math.random() * (sides ?? this.constants.DEFAULT_DIE_SIDES)) + 1
+    Math.floor(
+      Math.random() * (sides ?? this.constants.DEFAULT_DIE_SIDES ?? 6)
+    ) + 1
 
-  onCheerHandler = (target, context, message) => {}
+  // onCheerHandler = (target, context, message) => {}
 }
 
 module.exports = SnaarfBot
