@@ -2,7 +2,8 @@
   "env": {
     "browser": true,
     "commonjs": true,
-    "es2021": true
+    "es2021": true,
+    "jest/globals": true
   },
   "extends": ["standard", "prettier"],
   "ignorePatterns": ["node_modules"],
@@ -12,5 +13,6 @@
   },
   "rules": {
     "linebreak-style": ["error", "unix"]
-  }
+  },
+  "plugins": ["jest"]
 }
