@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unversioned]
 
+- Add jest unit tests
+- Add jest to pre-commit hook
 - Convert all line endings from CRLF to LF
 - Add pre-commit and pre-receive githooks
 - Install and configure eslint and prettier and make existing code compliant
