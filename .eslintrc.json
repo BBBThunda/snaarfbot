@@ -1,0 +1,18 @@
+{
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "es2021": true,
+    "jest/globals": true
+  },
+  "extends": ["standard", "prettier"],
+  "ignorePatterns": ["node_modules"],
+  "overrides": [],
+  "parserOptions": {
+    "ecmaVersion": "latest"
+  },
+  "rules": {
+    "linebreak-style": ["error", "unix"]
+  },
+  "plugins": ["jest"]
+}

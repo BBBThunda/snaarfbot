@@ -1,0 +1,82 @@
+#!/bin/bash
+
+set -Euo pipefail
+
+ESLINT_PATH='node_modules/.bin/eslint'
+PRETTIER_PATH='node_modules/.bin/prettier'
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g' |grep ".js$")
+GREEN="\033[0;32m"
+RED="\033[0;41m"
+NOFORMAT="\033[0m"
+
+if [[ "$STAGED_FILES" != "" ]]; then
+
+  echo -e "\n${GREEN}Validating Javascript/Node:${NOFORMAT}\n"
+
+  echo -e "${GREEN}Checking for eslint executable${NOFORMAT}"
+  ls $ESLINT_PATH &> /dev/null
+  if [[ "$?" != 0 ]]; then
+    echo -e "\t${RED}eslint not found. Please run 'npm install'${NOFORMAT}"
+    exit 1
+  fi
+  echo -e "${GREEN}eslint executable FOUND!${NOFORMAT}"
+
+  echo -e "${GREEN}Checking for prettier executable${NOFORMAT}"
+  ls $PRETTIER_PATH &> /dev/null
+  if [[ "$?" != 0 ]]; then
+    echo -e "\t${RED}prettier not found. Please run 'npm install'${NOFORMAT}"
+    exit 1
+  fi
+  echo -e "${GREEN}prettier executable FOUND!${NOFORMAT}"
+
+
+  # LINTING
+
+  echo -e "${GREEN}Running eslint on modified files${NOFORMAT}"
+  echo -e "$STAGED_FILES" | xargs npm run lint:check
+
+  if [[ "$?" != 0 ]]; then
+    echo -e "${RED}COMMIT FAILED:${NOFORMAT} Your commit contains files that should pass ESLint but do not. Please fix the ESLint errors and try again.\n"
+    exit 1
+  fi
+  echo -e "${GREEN}ESLint check complete${NOFORMAT}"
+
+
+  # CODE STYLE
+
+  echo -e "${GREEN}Running prettier on modified files${NOFORMAT}"
+  echo -e "$STAGED_FILES" | xargs npm run format:write
+
+  if [[ "$?" != 0 ]]; then
+    echo -e "${RED}prettier Failed${NOFORMAT}"
+    echo -e "${RED}COMMIT FAILED:${NOFORMAT} Your commit contains files that caused prettier to fail. Please fix prettier errors and try again.\n"
+    exit 1
+  fi
+
+  echo -e "${GREEN}prettier completed successfully${NOFORMAT}"
+
+  echo -e "${GREEN}Javascript/Node validation completed!${NOFORMAT}"
+
+fi
+
+# UNIT TESTS
+
+echo -e "${GREEN}Running all unit tests via jest${NOFORMAT}"
+npm test
+
+if [[ "$?" != 0 ]]; then
+  echo -e "${RED}jest Failed${NOFORMAT}"
+  echo -e "${RED}COMMIT FAILED:${NOFORMAT} Unit tests are failing on your branch. Please see the test output and fix any issues. You can try checking out 'main' and running 'npm test' to check whether it's your code.\n"
+  exit 1
+fi
+
+echo -e "${GREEN}jest unit tests PASSED${NOFORMAT}"
+
+# Add back the modified/prettified files to staging
+echo -e "$STAGED_FILES" | xargs git add
+
+if [[ "$?" == 0 ]]; then
+  echo -e "${GREEN}COMMIT SUCCEEDED${NOFORMAT}\n"
+else
+  exit $?
+fi
