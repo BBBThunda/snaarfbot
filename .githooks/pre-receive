@@ -53,7 +53,7 @@ fi
 
 # UNIT TESTS
 
-echo -e "${GREEN}Running jest on all unit tests${NOFORMAT}"
+echo -e "${GREEN}Running all unit tests via jest${NOFORMAT}"
 npm test
 
 if [[ "$?" != 0 ]]; then

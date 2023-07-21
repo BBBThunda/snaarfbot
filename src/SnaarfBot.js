@@ -1,5 +1,5 @@
 /** Contains the primary logic of the chat bot */
-class SnaarfBot {
+module.exports = class SnaarfBot {
   /** @property {Object} client Twitch IRC Client created and initialized by tmi.js */
   client
 
@@ -111,5 +111,3 @@ class SnaarfBot {
 
   // onCheerHandler = (target, context, message) => {}
 }
-
-module.exports = SnaarfBot

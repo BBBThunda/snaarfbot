@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const SnaarfBot = require('./snaarfBot')
+const SnaarfBot = require('./SnaarfBot')
 
 // Create the dependencies for a SnaarfBot object
 const logger = require('./logger')

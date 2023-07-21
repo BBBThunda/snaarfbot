@@ -3,7 +3,7 @@
 /* eslint no-unused-expressions: "off" -- We're only testing mock methods called when testing functions that don't return a value */
 /* eslint no-new: "off" -- We're only testing mock methods called when testing functions that don't return a value */
 
-const SnaarfBot = require('../snaarfBot')
+const SnaarfBot = require('../SnaarfBot')
 const logger = require('../logger')
 const client = require('../tmi')
 
