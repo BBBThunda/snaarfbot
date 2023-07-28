@@ -13,29 +13,45 @@ module.exports = class Poll {
   // Default Poll length in minutes
   DEFAULT_POLL_LENGTH = 120
 
-  // TODO: Figure out if private properties makes sense
-  // Poll ID - unique across all targets
+  /** @property {String} id Vote ID - unique across all targets */
   id
 
-  // Target (channel) name
+  /** @property {String} target Target (channel) name */
   target
 
-  // User who created the Poll
+  /** @property {String} creator ID of the user who created the poll */
   creator
 
-  // Description of the poll or the question that is being answered, etc.
+  /**
+   * Description of the poll or the question that is being answered, etc.
+   * @property {String} description
+   */
   description
 
-  // The options for the users to select, aka the things they are voting on
+  /**
+   * The options for the users to select, aka the things they are voting on
+   * @property {String[]} options
+   */
   options
 
-  // Timestamp of when the poll starts in ms since UNIX epoch - defaults to the time the poll was created
+  /**
+   * Timestamp of when the poll starts in ms since UNIX epoch
+   *  -defaults to the time the poll was created
+   * @property {Date} start
+   */
   start
 
-  // Duration of the poll (in minutes)
+  /**
+   * Timestamp of when the poll ends in ms since UNIX epoch
+   *  -start + length
+   * @property {Date} start
+   */
   end
 
-  // Status of the poll (active, complete, deactivated)
+  /**
+   * Status of the poll (active, complete, deactivated)
+   * @property {String} status
+   */
   status
 
   // TODO: Selection should be a separate class
@@ -44,9 +60,12 @@ module.exports = class Poll {
 
   /**
    * Create a new Poll object - should not be allowed if an active Poll exists for the target
-   * @param {*} description
-   * @param {*} options
-   * @param {*} length
+   *
+   * @param {String}   target
+   * @param {String}   user
+   * @param {String}   description
+   * @param {String[]} options
+   * @param {number}   length
    */
   constructor(target, user, description, options, length) {
     const NOW = Date.now()
@@ -61,8 +80,7 @@ module.exports = class Poll {
     this.selections = []
 
     // We can't have less than 2 options or it would just be a rhetorical poll
-    // For now, the array index can be the "option id"
-    this.options = options.length > 2 ? options : ['Option 1', 'Option 2']
+    this.options = options
 
     // Calculate end as NOW + length minutes
     const constants = require('./constants')
@@ -74,11 +92,11 @@ module.exports = class Poll {
    * Validate that params are valid before creating a new Poll and provide a
    *  user-friendly error message on faliure.
    *
-   * @param {*} target
-   * @param {*} user
-   * @param {*} description
-   * @param {*} options
-   * @param {*} length
+   * @param {String}   target
+   * @param {String}   user
+   * @param {String}   description
+   * @param {String[]} options
+   * @param {number}   length
    *
    * @returns {String} Error message or null string if validation passed
    */
@@ -89,8 +107,6 @@ module.exports = class Poll {
     }
     if (typeof user !== 'string') {
       return 'User is invalid'
-      // DEBUG!!! FIGURE OUT IF WE CAN USE USERID INSTEAD OF USERNAME
-      // DEBUG!!! FIGURE OUT HOW TO PASS USER LEVEL (BC, MOD, VIP, ETC.) REQUIRE BC FOR NOW
     }
     if (typeof description !== 'string') {
       return 'Description is invalid'
@@ -109,6 +125,7 @@ module.exports = class Poll {
         return 'Invalid option given.'
       }
     }
+    console.log(length)
     if (length && typeof length !== 'number') {
       return '<length> must be a number representing the length of the poll in minutes.'
     }
@@ -142,9 +159,12 @@ module.exports = class Poll {
   }
 
   // Disable Poll
-  disable() {
+  deactivate(target, userId) {
+    if (this.target !== target) {
+      throw new Error('Failed to disable poll - incorrect target')
+    }
     if (this.status !== 'active') {
-      throw new Error('Failed attempting to disable a non-active Poll.')
+      throw new Error('Failed to disable poll - poll not active')
     }
     this.status = 'deactivated'
   }
