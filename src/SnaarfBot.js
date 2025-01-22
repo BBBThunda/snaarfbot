@@ -32,7 +32,12 @@ module.exports = class SnaarfBot {
     // Register our event handlers
     client.on('connected', this.onConnectedHandler)
     client.on('message', this.onMessageHandler)
-    // client.on('cheer', this.onCheerHandler)
+    client.on('cheer', this.onCheerHandler)
+    client.on('sub', this.onSubHandler)
+    client.on('resub', this.onResubHandler)
+    client.on('subgift', this.onSubGiftHandler)
+    client.on('submysterygift', this.onSubMysteryGiftHandler)
+    // client.on('', this.onHandler)
     // Connect to Twitch and cache the client
     client.connect()
     this.client = client
@@ -66,13 +71,13 @@ module.exports = class SnaarfBot {
     // console.log(context)
 
     // Useful context fields for reference (not used yet)
-    const chatUserId = context['user-id']
+    // const chatUserId = context['user-id']
     // const chatUserName = context['display-name']
-    const roles = this.getRoles(context)
+    // const roles = this.getRoles(context)
 
     const msgParts = this.parseArguments(msg.trim())
-    console.log('msg: ' + msg)
-    console.log(msgParts)
+    console.log('msg: ' + context['display-name'] + ': ' + msg)
+    // console.log(msgParts)
     // Ignore messages that are not bot commands
     if (!msgParts[0] || msgParts[0].charAt(0) !== '!') {
       return
@@ -93,86 +98,86 @@ module.exports = class SnaarfBot {
         this.logger.info(`* Executed ${commandName} command in ${target}`)
         break
       // Create a new Poll
-      case 'createpoll': {
-        if (!roles.broadcaster) {
-          break
-        }
-        const [length, description, ...options] = args
-        // console.log({length: length, description: description, options: options})
-        const errorMessage = this.createPoll(
-          target,
-          chatUserId,
-          description,
-          options,
-          length
-        )
-        const usage = `!createPoll <lengthInMinutes> "<description>" "<option1>" "<option2>" [option3...]`
-        if (errorMessage !== '') {
-          // Fail message
-          this.logger.warn(
-            `Failed to create Poll: ${errorMessage}  Message: ${msg}`
-          )
-          this.client.say(
-            target,
-            `Failed to create Poll: ${errorMessage}\nSyntax:\n${usage}`
-          )
-        } else {
-          // Success message
-          this.client.say(
-            target,
-            'Your poll has been created and will end in ' +
-              length +
-              ' minutes.\n' +
-              'To vote, use command !vote.\n' +
-              'To view the status, use command !sbPoll'
-          )
-        }
-        this.logger.info(`* Executed ${commandName} command in ${target}`)
-        break
-      }
-      case 'disablepoll':
-        if (!roles.broadcaster) {
-          break
-        }
-        this.disablePoll(target, chatUserId)
-        this.logger.info(`* Executed ${commandName} command in ${target}`)
-        break
-      // Show status of the current poll
-      case 'sbpoll': {
-        const poll = this.getActivePoll(target)
-        // console.log(poll)
-        if (poll === null) {
-          this.logger.info(`Can't show status - nonexistent poll.`)
-          break
-        }
-        poll.updateStatus()
-        let message = `Poll status: ${poll.status}\n
-        ${poll.description}\n`
-        poll.options.forEach((option) => {
-          const votes = 1 // DEBUG!!! Get this from the correct place once vote command is implemented
-          message += `${option}: ${votes} votes\n`
-        })
-        const timeRemaining = poll.getTimeRemaining()
-        const hours = Math.floor(timeRemaining / 1000 / 60 / 60)
-        const minutes = Math.floor(
-          (timeRemaining / 1000 / 60 / 60 - hours) * 60
-        )
-        const seconds = Math.floor(
-          ((timeRemaining / 1000 / 60 / 60 - hours) * 60 - minutes) * 60
-        )
-        message += `Poll ends in`
-        message += hours > 0 ? ` ${hours} hrs` : ``
-        message += minutes > 0 ? ` ${minutes} min` : ``
-        message += seconds > 0 ? ` ${seconds} sec` : ``
-        this.client.say(target, message)
-        this.logger.info(`* Executed ${commandName} command in ${target}`)
-        break
-      }
-      // Choose the poll option to which your votes will go
-      case 'vote':
-        this.submitVote(target, chatUserId, args[0] || null)
-        this.logger.info(`* Executed ${commandName} command in ${target}`)
-        break
+      // case 'createpoll': {
+      //   if (!roles.broadcaster) {
+      //     break
+      //   }
+      //   const [length, description, ...options] = args
+      //   // console.log({length: length, description: description, options: options})
+      //   const errorMessage = this.createPoll(
+      //     target,
+      //     chatUserId,
+      //     description,
+      //     options,
+      //     length
+      //   )
+      //   const usage = `!createPoll <lengthInMinutes> "<description>" "<option1>" "<option2>" [option3...]`
+      //   if (errorMessage !== '') {
+      //     // Fail message
+      //     this.logger.warn(
+      //       `Failed to create Poll: ${errorMessage}  Message: ${msg}`
+      //     )
+      //     this.client.say(
+      //       target,
+      //       `Failed to create Poll: ${errorMessage}\nSyntax:\n${usage}`
+      //     )
+      //   } else {
+      //     // Success message
+      //     this.client.say(
+      //       target,
+      //       'Your poll has been created and will end in ' +
+      //         length +
+      //         ' minutes.\n' +
+      //         'To vote, use command !vote.\n' +
+      //         'To view the status, use command !sbPoll'
+      //     )
+      //   }
+      //   this.logger.info(`* Executed ${commandName} command in ${target}`)
+      //   break
+      // }
+      // case 'disablepoll':
+      //   if (!roles.broadcaster) {
+      //     break
+      //   }
+      //   this.disablePoll(target, chatUserId)
+      //   this.logger.info(`* Executed ${commandName} command in ${target}`)
+      //   break
+      // // Show status of the current poll
+      // case 'sbpoll': {
+      //   const poll = this.getActivePoll(target)
+      //   // console.log(poll)
+      //   if (poll === null) {
+      //     this.logger.info(`Can't show status - nonexistent poll.`)
+      //     break
+      //   }
+      //   poll.updateStatus()
+      //   let message = `Poll status: ${poll.status}\n
+      //   ${poll.description}\n`
+      //   poll.options.forEach((option) => {
+      //     const votes = 1 // DEBUG!!! Get this from the correct place once vote command is implemented
+      //     message += `${option}: ${votes} votes\n`
+      //   })
+      //   const timeRemaining = poll.getTimeRemaining()
+      //   const hours = Math.floor(timeRemaining / 1000 / 60 / 60)
+      //   const minutes = Math.floor(
+      //     (timeRemaining / 1000 / 60 / 60 - hours) * 60
+      //   )
+      //   const seconds = Math.floor(
+      //     ((timeRemaining / 1000 / 60 / 60 - hours) * 60 - minutes) * 60
+      //   )
+      //   message += `Poll ends in`
+      //   message += hours > 0 ? ` ${hours} hrs` : ``
+      //   message += minutes > 0 ? ` ${minutes} min` : ``
+      //   message += seconds > 0 ? ` ${seconds} sec` : ``
+      //   this.client.say(target, message)
+      //   this.logger.info(`* Executed ${commandName} command in ${target}`)
+      //   break
+      // }
+      // // Choose the poll option to which your votes will go
+      // case 'vote':
+      //   this.submitVote(target, chatUserId, args[0] || null)
+      //   this.logger.info(`* Executed ${commandName} command in ${target}`)
+      //   break
       default:
         this.logger.warn(`* Unknown command ${commandName}, ignored`)
     }
@@ -320,7 +325,47 @@ module.exports = class SnaarfBot {
       Math.random() * (sides ?? this.constants.DEFAULT_DIE_SIDES ?? 6)
     ) + 1
 
-  // onCheerHandler = (target, context, message) => {}
+  onCheerHandler = (target, context, message) => {
+    console.log('CHEER')
+    console.log({ target, context, message })
+  }
+
+  onSubHandler = (target, username, methods, msg, context) => {
+    console.log('SUB')
+    console.log({ target, username, methods, msg, context })
+  }
+
+  onResubHandler = (target, username, streakMonths, msg, context, methods) => {
+    console.log('RESUB')
+    console.log({ target, username, streakMonths, msg, context, methods })
+  }
+
+  onSubGiftHandler = (
+    target,
+    username,
+    streakMonths,
+    recipient,
+    methods,
+    context
+  ) => {
+    console.log('SUBGIFT')
+    console.log({ target, username, streakMonths, recipient, methods, context })
+  }
+
+  onSubMysteryGiftHandler = (
+    target,
+    username,
+    giftSubCount,
+    methods,
+    context
+  ) => {
+    console.log('SUBMYSTERYGIFT')
+    console.log({ target, username, giftSubCount, methods, context })
+  }
+
+  // onCheerHandler = (target, context, message) => {
+  //   console.log([target, context, message])
+  // }
 
   /**
    * Parse a message into components delimited by spaces or blocks surrounded by quotes

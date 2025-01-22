@@ -133,3 +133,5 @@ dist
 .*.swp
 .*.swo
 
+# IntellJ IDEA
+.idea/
